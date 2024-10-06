@@ -6,7 +6,6 @@
 #include <sstream>
 #include <regex>
 
-
 using namespace std;
 
 //Leo el file 
@@ -49,8 +48,11 @@ void writeCodePositions(ofstream& offfile, const string& fileName, const vector<
 //Metodo mas eficiente para encontrar el palindromo es el de Manacher 
 //constante para que no se modifique el string
 string juntarString(const string& text){
-    //#h#e#l#l#o#
-    string newString = "#" + regex_replace(text, regex(""), "#") + "#";
+    string newString = "#";
+    for (char c : text) {
+        newString += c;
+        newString += "#";
+    }
     return newString;
 }
 

@@ -1,0 +1,144 @@
+==============
+Resultados de la verificación:
+==============
+
+==============
+Resultados de la verificación del código malicioso:
+==============
+
+Buscando el código malicioso: AA
+==============
+Posiciones del código malicioso en transmission1.txt:
+427 615 857 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+574 667 
+---------------
+Posiciones del código malicioso en transmission3.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Buscando el código malicioso: A13
+==============
+Posiciones del código malicioso en transmission1.txt:
+23 153 822 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+253 
+---------------
+Posiciones del código malicioso en transmission3.txt:
+344 
+---------------
+Buscando el código malicioso: 73A2
+==============
+Posiciones del código malicioso en transmission1.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission2.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission3.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Buscando el código malicioso: 1C3
+==============
+Posiciones del código malicioso en transmission1.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission2.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission3.txt:
+527 
+---------------
+Buscando el código malicioso: CDEC
+==============
+Posiciones del código malicioso en transmission1.txt:
+0 463 640 705 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission3.txt:
+17 269 282 466 
+---------------
+Buscando el código malicioso: FFF
+==============
+Posiciones del código malicioso en transmission1.txt:
+764 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission3.txt:
+352 353 354 355 356 
+---------------
+Buscando el código malicioso: 139
+==============
+Posiciones del código malicioso en transmission1.txt:
+24 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+254 680 683 686 
+---------------
+Posiciones del código malicioso en transmission3.txt:
+441 537 
+---------------
+Buscando el código malicioso: CF40
+==============
+Posiciones del código malicioso en transmission1.txt:
+29 708 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+994 
+---------------
+Posiciones del código malicioso en transmission3.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Buscando el código malicioso: 77
+==============
+Posiciones del código malicioso en transmission1.txt:
+56 473 483 767 
+---------------
+Posiciones del código malicioso en transmission2.txt:
+22 414 415 646 745 974 
+---------------
+Posiciones del código malicioso en transmission3.txt:
+66 427 637 638 639 640 
+---------------
+Buscando el código malicioso: 567
+==============
+Posiciones del código malicioso en transmission1.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+Posiciones del código malicioso en transmission2.txt:
+272 
+---------------
+Posiciones del código malicioso en transmission3.txt:
+No se encontró el código malicioso en este archivo.
+---------------
+====================
+ PALINDROMO
+====================
+Palindromo más largo en transmission1.txt:
+Posicion de inicio: 75
+Palíndromo: A2E2A
+----
+Palindromo más largo en transmission2.txt:
+Posicion de inicio: 45
+Palindromo: C8F8C
+----
+Palindromo más largo en transmission3.txt:
+Posicion de inicio: 351
+Palindromo: 0FFFFFFF0
+====================
+SUBCADENAS:
+====================
+Subcadena comun mas larga entre transmission1.txt y transmission2.txt:
+Subcadena: 943A5
+----
+Subcadena comun mas larga entre transmission1.txt y transmission3.txt:
+Subcadena: CDEC
+----
+Subcadena comun mas larga entre transmission2.txt y transmission3.txt:
+Subcadena: 571139
+----

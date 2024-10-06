@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/alejandrohernandez/Documents/GitHub/Evidencia1/evidencia1def'
+relocations:     []
+...
