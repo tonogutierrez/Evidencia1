@@ -116,6 +116,7 @@ Posiciones del código malicioso en transmission2.txt:
 Posiciones del código malicioso en transmission3.txt:
 No se encontró el código malicioso en este archivo.
 ---------------
+La subsecuencia más encontrada es: 77 con 16 veces en los archivos correspondientes.
 ====================
  PALINDROMO
 ====================

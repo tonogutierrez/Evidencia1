@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <sstream>
 #include <regex>
+#include <map> // Added this line to store the frequency of malicious codes
 
 using namespace std;
 
@@ -126,6 +127,7 @@ string solve(string w1, string w2) {
     // Reconstruir la subcadena más larga usando el índice de fin
     return w1.substr(endIndex - maxlength, maxlength);
 }
+
 int main(){
 
     string transmission1 = readFile("transmission1.txt");
@@ -133,7 +135,6 @@ int main(){
     string transmission3 = readFile("transmission3.txt");
     string mcode = readFile("mcode.txt");
     
-
     // Dividir el contenido de mcode.txt en líneas (cada línea es un código malicioso)
     vector<string> maliciousCodes;
     stringstream ss(mcode);
@@ -171,19 +172,36 @@ int main(){
     offfile << "==============\n";
     offfile << "Resultados de la verificación del código malicioso:\n";
     offfile << "==============\n\n";
+    
+    // Mapa para llevar conteo de la frecuencia de los códigos maliciosos
+    map<string, int> codeFrequency; // Código malicioso -> Frecuencia
+
     // Para cada código malicioso, buscarlo en los tres archivos de transmisión
     for (const string& code : maliciousCodes) {
         offfile << "Buscando el código malicioso: " << code << "\n";
         offfile << "==============\n";
         vector<int> positions1 = findCodePositions(transmission1, code);
         writeCodePositions(offfile, "transmission1.txt", positions1);
+        codeFrequency[code] += positions1.size(); // Increment frequency count for transmission1
 
         vector<int> positions2 = findCodePositions(transmission2, code);
         writeCodePositions(offfile, "transmission2.txt", positions2);
+        codeFrequency[code] += positions2.size(); // Increment frequency count for transmission2
 
         vector<int> positions3 = findCodePositions(transmission3, code);
         writeCodePositions(offfile, "transmission3.txt", positions3);
+        codeFrequency[code] += positions3.size(); // Increment frequency count for transmission3
     }
+
+    // Added code to find and write the most frequent malicious code
+    auto mostFrequentCode = max_element(codeFrequency.begin(), codeFrequency.end(),
+                                        [](const pair<string, int>& a, const pair<string, int>& b) {
+                                            return a.second < b.second;
+                                        });
+
+    offfile << "La subsecuencia más encontrada es: " << mostFrequentCode->first
+            << " con " << mostFrequentCode->second << " veces en los archivos correspondientes.\n";
+    
     // Escribir el palíndromo más largo
     offfile << "====================\n";
     offfile <<" PALINDROMO\n";
