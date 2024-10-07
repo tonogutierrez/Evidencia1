@@ -74,6 +74,7 @@ string prepararCadenaPalindromo(const string& texto) {
     return cadenaPreparada;
 }
 //Manacher
+//0(n)
 pair<string, int> encontrarPalindromoMasLargo(const string& texto) {
     int posicionInicial = 0;
     int tamanoMaximo = 1;
@@ -106,6 +107,7 @@ pair<string, int> encontrarPalindromoMasLargo(const string& texto) {
 }
 
 // Longest Common Substring (LCS)
+//O(m*n)
 string encontrarSubcadenaComun(const string& texto1, const string& texto2) {
     int longitud1 = texto1.length();
     int longitud2 = texto2.length();
