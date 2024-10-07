@@ -1,244 +1,227 @@
+/*
+    Antonio Gutiérrez Mireles A01198527
+    Alejandro Hernandez A01571408
+*/
 #include <iostream>
-#include <fstream> //para leer archivos
+#include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <sstream>
-#include <regex>
-#include <map> // Added this line to store the frequency of malicious codes
+#include <unordered_map>
 
 using namespace std;
 
-//Leo el file 
+//leer archivo
 string readFile(const string& fileName) {
     ifstream archivo(fileName);
-    // Si no se encuentra el archivo o hay un error al abrirlo
     if (!archivo) {
-        cerr << "No se pudo abrir este archivo: " << fileName << endl;
-        return "";  // Devolver cadena vacía en caso de error
+        cerr << "No se pudo abrir el archivo: " << fileName << endl;
+        return "";  
     }
-    string text((istreambuf_iterator<char>(archivo)), istreambuf_iterator<char>());
-    return text;  // Devolver el contenido leído
+    string contenido((istreambuf_iterator<char>(archivo)), istreambuf_iterator<char>());
+    return contenido;
 }
 
-// Función para encontrar las posiciones del código malicioso en un archivo
-vector<int> findCodePositions(const string& fileContent, const string& code) {
-    vector<int> positions;
-    size_t pos = fileContent.find(code, 0);
+//Funcion para encontrar las posiciones de un código en un archivo
+vector<int> encontrarPosicionesCodigo(const string& contenidoArchivo, const string& codigo) {
+    vector<int> posiciones;
+    size_t pos = contenidoArchivo.find(codigo, 0);
     while (pos != string::npos) {
-        positions.push_back(pos);
-        pos = fileContent.find(code, pos + 1);
+        posiciones.push_back(pos);
+        pos = contenidoArchivo.find(codigo, pos + 1);
     }
-    return positions;
+    return posiciones;
 }
 
-// Función para escribir las posiciones encontradas en un archivo de salida
-void writeCodePositions(ofstream& offfile, const string& fileName, const vector<int>& positions) {
-    offfile << "Posiciones del código malicioso en " << fileName << ":\n";
-    if (positions.empty()) {
-        offfile << "No se encontró el código malicioso en este archivo.\n";
-    } else {
-        for (int pos : positions) {
-            offfile << pos << " ";
+// contar ocurrencias
+int contarOcurrencias(const string& texto, const string& patron) {
+    int cantidad = 0;
+    size_t pos = 0;
+    while ((pos = texto.find(patron, pos)) != string::npos) {
+        cantidad++;
+        pos += patron.length(); //avanza la posición para evitar contar la misma aparición
+    }
+    return cantidad;
+}
+
+//Elimina cada carácter de una cadena una vez, y cuenta las apariciones en una lista de textos
+unordered_map<string, vector<int>> contarSubcadenasSinCaracter(const string& cadenaOriginal, const vector<string>& documentos) {
+    unordered_map<string, vector<int>> subcadenasYConteo;
+
+    for (size_t indice = 0; indice < cadenaOriginal.size(); ++indice) {
+        string subcadenaModificada = cadenaOriginal;
+        subcadenaModificada.erase(subcadenaModificada.begin() + indice);  //eliminar carácter
+
+        vector<int> conteosPorDocumento;
+        for (const auto& documento : documentos) {
+            int cantidad = contarOcurrencias(documento, subcadenaModificada);
+            conteosPorDocumento.push_back(cantidad);
         }
-        offfile << "\n";
+        subcadenasYConteo[subcadenaModificada] = conteosPorDocumento; 
     }
-    offfile << "---------------\n";
-}
 
-//Metodo mas eficiente para encontrar el palindromo es el de Manacher 
-//constante para que no se modifique el string
-string juntarString(const string& text){
-    string newString = "#";
-    for (char c : text) {
-        newString += c;
-        newString += "#";
+    return subcadenasYConteo;
+}
+//Función para encontrar el palíndromo más largo usando Manacher
+string prepararCadenaPalindromo(const string& texto) {
+    // Ejemplo: "#h#e#l#l#o#"
+    string cadenaPreparada = "#";
+    for (char c : texto) {
+        cadenaPreparada += c;
+        cadenaPreparada += "#";
     }
-    return newString;
+    return cadenaPreparada;
 }
+//Manacher
+pair<string, int> encontrarPalindromoMasLargo(const string& texto) {
+    int posicionInicial = 0;
+    int tamanoMaximo = 1;
+    string palindromoMaximo = texto.substr(0, 1);
+    string cadenaProcesada = prepararCadenaPalindromo(texto);
+    int tamanoCadena = cadenaProcesada.size();
+    vector<int> dp(tamanoCadena, 0);
+    int centro = 0;
+    int limiteDerecho = 0;
 
-pair<string, int> palindromoManacher(const string& texto){
-
-    int startPos = 0;
-    int maxSize = 1;
-    string maxStr = texto.substr(0,1);
-
-    string stringTemp = juntarString(texto);
-    int sizeNewString = stringTemp.size();
-    vector<int> dp(sizeNewString,0);
-    int center = 0;
-    int right = 0;
-
-    for(int i=0; i < sizeNewString; i++ ){
-        if (i < right){
-            dp[i] = min(right-i, dp[2*center-i]);
+    for (int i = 0; i < tamanoCadena; i++) {
+        if (i < limiteDerecho) {
+            dp[i] = min(limiteDerecho - i, dp[2 * centro - i]);
         }
-        while(i-dp[i] - 1 >= 0 && i+dp[i]+1 < sizeNewString && stringTemp[i-dp[i]-1] == stringTemp[i+dp[i]+1]){
+        while (i - dp[i] - 1 >= 0 && i + dp[i] + 1 < tamanoCadena && cadenaProcesada[i - dp[i] - 1] == cadenaProcesada[i + dp[i] + 1]) {
             dp[i] += 1;
         }
-        if(dp[i]+i > right){
-            center = i;
-            right = dp[i]+i;
+        if (dp[i] + i > limiteDerecho) {
+            centro = i;
+            limiteDerecho = dp[i] + i;
         }
-        if(maxSize < dp[i]){
-            maxSize = dp[i];
-            //Obtener la subcadena del palíndromo más largo
-            maxStr = stringTemp.substr(i-dp[i],2*dp[i]+1);
-            // Eliminar los caracteres '#' para obtener la cadena original
-            maxStr.erase(remove(maxStr.begin(), maxStr.end(), '#'), maxStr.end());
-            //Calcular la posición de inicio en la cadena original
-            startPos = (i - dp[i]) / 2;
+        if (tamanoMaximo < dp[i]) {
+            tamanoMaximo = dp[i];
+            palindromoMaximo = cadenaProcesada.substr(i - dp[i], 2 * dp[i] + 1);
+            palindromoMaximo.erase(remove(palindromoMaximo.begin(), palindromoMaximo.end(), '#'), palindromoMaximo.end());
+            posicionInicial = (i - dp[i]) / 2;
         }
     }
-    return {maxStr, startPos};
-
+    return {palindromoMaximo, posicionInicial};
 }
 
-string solve(string w1, string w2) {
-    int n = w1.length();
-    int m = w2.length();
-
-    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
-    int maxlength = 0;  // Longitud máxima de la subcadena común
-    int endIndex = 0;   // Índice donde termina la subcadena común más larga en w1
-
-    // Lleno la matriz DP
-    for (int i = 1; i <= n; i++) {
-        for (int j = 1; j <= m; j++) {
-            if (w1[i - 1] == w2[j - 1]) {
+// Longest Common Substring (LCS)
+string encontrarSubcadenaComun(const string& texto1, const string& texto2) {
+    int longitud1 = texto1.length();
+    int longitud2 = texto2.length();
+    vector<vector<int>> dp(longitud1 + 1, vector<int>(longitud2 + 1, 0));
+    int longitudMaxima = 0;
+    int indiceFinal = 0;
+    for (int i = 1; i <= longitud1; i++) {
+        for (int j = 1; j <= longitud2; j++) {
+            if (texto1[i - 1] == texto2[j - 1]) {
                 dp[i][j] = dp[i - 1][j - 1] + 1;
-
-                // Actualizo el tamaño máximo y el índice de fin si encuentro una subcadena más larga
-                if (dp[i][j] > maxlength) {
-                    maxlength = dp[i][j];
-                    endIndex = i;  // Guardo el índice donde termina la subcadena en w1
+                if (dp[i][j] > longitudMaxima) {
+                    longitudMaxima = dp[i][j];
+                    indiceFinal = i;
                 }
             } else {
                 dp[i][j] = 0;
             }
         }
     }
-
-    // Si no hay subcadena común, retornamos una cadena vacía
-    if (maxlength == 0) {
+    if (longitudMaxima == 0) {
         return "";
     }
-
-    // Reconstruir la subcadena más larga usando el índice de fin
-    return w1.substr(endIndex - maxlength, maxlength);
+    return texto1.substr(indiceFinal - longitudMaxima, longitudMaxima);
 }
+int main() {
+    string transmision1 = readFile("transmission1.txt");
+    string transmision2 = readFile("transmission2.txt");
+    string transmision3 = readFile("transmission3.txt");
+    string codigosMaliciosos = readFile("mcode.txt");
 
-int main(){
+    vector<string> archivosTransmision = {transmision1, transmision2, transmision3};
+    vector<string> listaCodigosMaliciosos;
+    stringstream ss(codigosMaliciosos);
+    string linea;
 
-    string transmission1 = readFile("transmission1.txt");
-    string transmission2 = readFile("transmission2.txt");
-    string transmission3 = readFile("transmission3.txt");
-    string mcode = readFile("mcode.txt");
-    
-    // Dividir el contenido de mcode.txt en líneas (cada línea es un código malicioso)
-    vector<string> maliciousCodes;
-    stringstream ss(mcode);
-    string line;
-    while (getline(ss, line)) {
-        if (!line.empty()) {
-            maliciousCodes.push_back(line);
+    //leer los códigos maliciosos
+    while (getline(ss, linea)) {
+        if (!linea.empty()) {
+            listaCodigosMaliciosos.push_back(linea);
         }
     }
-    cout << "Obteniendo los datos..............." << endl;
-
-    ofstream offfile("checking.txt");
-    //string texto = "abacdfgdcaba";
-    pair<string, int> resultado = palindromoManacher(transmission1);
-    pair<string, int> resultado2 = palindromoManacher(transmission2);
-    pair<string, int> resultado3 = palindromoManacher(transmission3);
-    //Subcadena
-    string resultado4 = solve(transmission1,transmission2);
-    string resultado5 = solve(transmission1,transmission3);
-    string resultado6 = solve(transmission2,transmission3);
-    // Encontrar código malicioso
-    vector<int> posiciones1 = findCodePositions(transmission1, mcode);
-    vector<int> posiciones2 = findCodePositions(transmission2, mcode);
-    vector<int> posiciones3 = findCodePositions(transmission3, mcode);
-
-    if (!offfile) {
-        cerr << "No se pudo abrir el archivo verificacion.txt para escribir." << endl;
+    ofstream archivoSalida("checking.txt");
+    if (!archivoSalida) {
+        cerr << "No se pudo abrir el archivo checking.txt para escribir." << endl;
         return 1;
     }
 
-    offfile << "==============\n";
-    offfile << "Resultados de la verificación:\n";
-    offfile << "==============\n\n";
+    archivoSalida << "==============\n";
+    archivoSalida << "Resultados de la verificación:\n";
+    archivoSalida << "==============\n\n";
 
-    offfile << "==============\n";
-    offfile << "Resultados de la verificación del código malicioso:\n";
-    offfile << "==============\n\n";
-    
-    // Mapa para llevar conteo de la frecuencia de los códigos maliciosos
-    map<string, int> codeFrequency; // Código malicioso -> Frecuencia
+    //buscar códigos maliciosos y escribir en el formato deseado
+    for (const string& codigo : listaCodigosMaliciosos) {
+        archivoSalida << "Código: " << codigo << "\n";
+        for (size_t i = 0; i < archivosTransmision.size(); i++) {
+            vector<int> posiciones = encontrarPosicionesCodigo(archivosTransmision[i], codigo);
+            archivoSalida << "Transmission" << (i + 1) << ".txt ==> " << posiciones.size() << " veces\n";
+            for (int pos : posiciones) {
+                archivoSalida << pos << " ";
+            }
+            archivoSalida << "\n";
+        }
 
-    // Para cada código malicioso, buscarlo en los tres archivos de transmisión
-    for (const string& code : maliciousCodes) {
-        offfile << "Buscando el código malicioso: " << code << "\n";
-        offfile << "==============\n";
-        vector<int> positions1 = findCodePositions(transmission1, code);
-        writeCodePositions(offfile, "transmission1.txt", positions1);
-        codeFrequency[code] += positions1.size(); // Increment frequency count for transmission1
+        //contar subcadenas para cada código
+        auto conteoSubcadenas = contarSubcadenasSinCaracter(codigo, archivosTransmision);
 
-        vector<int> positions2 = findCodePositions(transmission2, code);
-        writeCodePositions(offfile, "transmission2.txt", positions2);
-        codeFrequency[code] += positions2.size(); // Increment frequency count for transmission2
+        //encontrar la subcadena más frecuente
+        string subcadenaMasFrecuente;
+        int maxFrecuencia = 0;
+        string archivoConMasFrecuencia;
 
-        vector<int> positions3 = findCodePositions(transmission3, code);
-        writeCodePositions(offfile, "transmission3.txt", positions3);
-        codeFrequency[code] += positions3.size(); // Increment frequency count for transmission3
+        //Evaluar conteos para determinar la subcadena más frecuente
+        for (const auto& par : conteoSubcadenas) {
+            const string& subcadena = par.first;
+            const vector<int>& conteosPorArchivo = par.second;
+
+            for (size_t j = 0; j < conteosPorArchivo.size(); ++j) {
+                if (conteosPorArchivo[j] > maxFrecuencia) {
+                    maxFrecuencia = conteosPorArchivo[j];
+                    subcadenaMasFrecuente = subcadena;
+                    archivoConMasFrecuencia = "Transmission" + to_string(j + 1) + ".txt";
+                }
+            }
+        }
+        if (maxFrecuencia > 0) {
+            archivoSalida << "La subsecuencia mas encontrada es: " << subcadenaMasFrecuente 
+                          << " con " << maxFrecuencia << " veces en " << archivoConMasFrecuencia << "\n";
+        } else {
+            archivoSalida << "No se encontró ninguna subsecuencia válida.\n";
+        }
+        archivoSalida << "--------------\n";
     }
+    //Escribir el palíndromo más largo en cada transmisión
+    pair<string, int> resultado1 = encontrarPalindromoMasLargo(transmision1);
+    pair<string, int> resultado2 = encontrarPalindromoMasLargo(transmision2);
+    pair<string, int> resultado3 = encontrarPalindromoMasLargo(transmision3);
 
-    // Added code to find and write the most frequent malicious code
-    auto mostFrequentCode = max_element(codeFrequency.begin(), codeFrequency.end(),
-                                        [](const pair<string, int>& a, const pair<string, int>& b) {
-                                            return a.second < b.second;
-                                        });
+    archivoSalida << "==============\n";
+    archivoSalida << "Palíndromo mas grande:\n";
+    archivoSalida << "Transmission1.txt ==> Posicion: " << resultado1.second << "\n" << resultado1.first << "\n";
+    archivoSalida << "----\n";
+    archivoSalida << "Transmission2.txt ==> Posicion: " << resultado2.second << "\n" << resultado2.first << "\n";
+    archivoSalida << "----\n";
+    archivoSalida << "Transmission3.txt ==> Posicion: " << resultado3.second << "\n" << resultado3.first << "\n";
+    archivoSalida << "==============\n";
 
-    offfile << "La subsecuencia más encontrada es: " << mostFrequentCode->first
-            << " con " << mostFrequentCode->second << " veces en los archivos correspondientes.\n";
-    
-    // Escribir el palíndromo más largo
-    offfile << "====================\n";
-    offfile <<" PALINDROMO\n";
-    offfile << "====================\n";
-    offfile << "Palindromo más largo en transmission1.txt:\n";
-    offfile << "Posicion de inicio: " << resultado.second<< endl;
-    offfile << "Palíndromo: " << resultado.first << endl;
-    offfile << "----\n";
+    //Substrings más largos entre transmisiones
+    string subcadenaEntreT1yT2 = encontrarSubcadenaComun(transmision1, transmision2);
+    string subcadenaEntreT1yT3 = encontrarSubcadenaComun(transmision1, transmision3);
+    string subcadenaEntreT2yT3 = encontrarSubcadenaComun(transmision2, transmision3);
 
-    offfile << "Palindromo más largo en transmission2.txt:\n";
-    offfile << "Posicion de inicio: " << resultado2.second<< endl;
-    offfile << "Palindromo: " << resultado2.first << endl;
-    offfile << "----\n";
+    archivoSalida << "Los Substring mas largos son:\n";
+    archivoSalida << "T1-T2 ==> " << subcadenaEntreT1yT2 << "\n";
+    archivoSalida << "T1-T3 ==> " << subcadenaEntreT1yT3 << "\n";
+    archivoSalida << "T2-T3 ==> " << subcadenaEntreT2yT3 << "\n";
 
-    offfile << "Palindromo más largo en transmission3.txt:\n";
-    offfile << "Posicion de inicio: " << resultado3.second<< endl;
-    offfile << "Palindromo: " << resultado3.first << endl;
-    offfile << "====================\n";
-    offfile << "SUBCADENAS:\n";
-    offfile << "====================\n";
-
-    // Escribir la subcadena común más larga
-    offfile << "Subcadena comun mas larga entre transmission1.txt y transmission2.txt:\n";
-    offfile << "Subcadena: " << resultado4 << endl;
-    offfile << "----\n";
-
-    offfile << "Subcadena comun mas larga entre transmission1.txt y transmission3.txt:\n";
-    offfile << "Subcadena: " << resultado5 << endl;
-    offfile << "----\n";
-
-    offfile << "Subcadena comun mas larga entre transmission2.txt y transmission3.txt:\n";
-    offfile << "Subcadena: " << resultado6 << endl;
-    offfile << "----\n";
-
-    // Cerrar el archivo
-    offfile.close();
-
-    cout << "Los resultados han sido guardados en checking.txt." << endl;
+    archivoSalida.close();
     return 0;
 }

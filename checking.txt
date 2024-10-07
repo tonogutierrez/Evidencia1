@@ -2,144 +2,108 @@
 Resultados de la verificación:
 ==============
 
-==============
-Resultados de la verificación del código malicioso:
-==============
-
-Buscando el código malicioso: AA
-==============
-Posiciones del código malicioso en transmission1.txt:
+Código: AA
+Transmission1.txt ==> 3 veces
 427 615 857 
----------------
-Posiciones del código malicioso en transmission2.txt:
+Transmission2.txt ==> 2 veces
 574 667 
----------------
-Posiciones del código malicioso en transmission3.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Buscando el código malicioso: A13
-==============
-Posiciones del código malicioso en transmission1.txt:
+Transmission3.txt ==> 0 veces
+
+La subsecuencia mas encontrada es: A con 56 veces en Transmission1.txt
+--------------
+Código: A13
+Transmission1.txt ==> 3 veces
 23 153 822 
----------------
-Posiciones del código malicioso en transmission2.txt:
+Transmission2.txt ==> 1 veces
 253 
----------------
-Posiciones del código malicioso en transmission3.txt:
+Transmission3.txt ==> 1 veces
 344 
----------------
-Buscando el código malicioso: 73A2
-==============
-Posiciones del código malicioso en transmission1.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission2.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission3.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Buscando el código malicioso: 1C3
-==============
-Posiciones del código malicioso en transmission1.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission2.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission3.txt:
+La subsecuencia mas encontrada es: 13 con 8 veces en Transmission2.txt
+--------------
+Código: 73A2
+Transmission1.txt ==> 0 veces
+
+Transmission2.txt ==> 0 veces
+
+Transmission3.txt ==> 0 veces
+
+La subsecuencia mas encontrada es: 732 con 1 veces en Transmission1.txt
+--------------
+Código: 1C3
+Transmission1.txt ==> 0 veces
+
+Transmission2.txt ==> 0 veces
+
+Transmission3.txt ==> 1 veces
 527 
----------------
-Buscando el código malicioso: CDEC
-==============
-Posiciones del código malicioso en transmission1.txt:
+La subsecuencia mas encontrada es: 13 con 8 veces en Transmission2.txt
+--------------
+Código: CDEC
+Transmission1.txt ==> 4 veces
 0 463 640 705 
----------------
-Posiciones del código malicioso en transmission2.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission3.txt:
+Transmission2.txt ==> 0 veces
+
+Transmission3.txt ==> 4 veces
 17 269 282 466 
----------------
-Buscando el código malicioso: FFF
-==============
-Posiciones del código malicioso en transmission1.txt:
+La subsecuencia mas encontrada es: CDE con 4 veces en Transmission1.txt
+--------------
+Código: FFF
+Transmission1.txt ==> 1 veces
 764 
----------------
-Posiciones del código malicioso en transmission2.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission3.txt:
+Transmission2.txt ==> 0 veces
+
+Transmission3.txt ==> 5 veces
 352 353 354 355 356 
----------------
-Buscando el código malicioso: 139
-==============
-Posiciones del código malicioso en transmission1.txt:
+La subsecuencia mas encontrada es: FF con 6 veces en Transmission3.txt
+--------------
+Código: 139
+Transmission1.txt ==> 1 veces
 24 
----------------
-Posiciones del código malicioso en transmission2.txt:
+Transmission2.txt ==> 4 veces
 254 680 683 686 
----------------
-Posiciones del código malicioso en transmission3.txt:
+Transmission3.txt ==> 2 veces
 441 537 
----------------
-Buscando el código malicioso: CF40
-==============
-Posiciones del código malicioso en transmission1.txt:
+La subsecuencia mas encontrada es: 39 con 10 veces en Transmission2.txt
+--------------
+Código: CF40
+Transmission1.txt ==> 2 veces
 29 708 
----------------
-Posiciones del código malicioso en transmission2.txt:
+Transmission2.txt ==> 1 veces
 994 
----------------
-Posiciones del código malicioso en transmission3.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Buscando el código malicioso: 77
-==============
-Posiciones del código malicioso en transmission1.txt:
+Transmission3.txt ==> 0 veces
+
+La subsecuencia mas encontrada es: CF4 con 2 veces en Transmission1.txt
+--------------
+Código: 77
+Transmission1.txt ==> 4 veces
 56 473 483 767 
----------------
-Posiciones del código malicioso en transmission2.txt:
+Transmission2.txt ==> 6 veces
 22 414 415 646 745 974 
----------------
-Posiciones del código malicioso en transmission3.txt:
+Transmission3.txt ==> 6 veces
 66 427 637 638 639 640 
----------------
-Buscando el código malicioso: 567
-==============
-Posiciones del código malicioso en transmission1.txt:
-No se encontró el código malicioso en este archivo.
----------------
-Posiciones del código malicioso en transmission2.txt:
+La subsecuencia mas encontrada es: 7 con 74 veces en Transmission2.txt
+--------------
+Código: 567
+Transmission1.txt ==> 0 veces
+
+Transmission2.txt ==> 1 veces
 272 
----------------
-Posiciones del código malicioso en transmission3.txt:
-No se encontró el código malicioso en este archivo.
----------------
-La subsecuencia más encontrada es: 77 con 16 veces en los archivos correspondientes.
-====================
- PALINDROMO
-====================
-Palindromo más largo en transmission1.txt:
-Posicion de inicio: 75
-Palíndromo: A2E2A
+Transmission3.txt ==> 0 veces
+
+La subsecuencia mas encontrada es: 57 con 7 veces en Transmission1.txt
+--------------
+==============
+Palíndromo mas grande:
+Transmission1.txt ==> Posicion: 75
+A2E2A
 ----
-Palindromo más largo en transmission2.txt:
-Posicion de inicio: 45
-Palindromo: C8F8C
+Transmission2.txt ==> Posicion: 45
+C8F8C
 ----
-Palindromo más largo en transmission3.txt:
-Posicion de inicio: 351
-Palindromo: 0FFFFFFF0
-====================
-SUBCADENAS:
-====================
-Subcadena comun mas larga entre transmission1.txt y transmission2.txt:
-Subcadena: 943A5
-----
-Subcadena comun mas larga entre transmission1.txt y transmission3.txt:
-Subcadena: CDEC
-----
-Subcadena comun mas larga entre transmission2.txt y transmission3.txt:
-Subcadena: 571139
-----
+Transmission3.txt ==> Posicion: 351
+0FFFFFFF0
+==============
+Los Substring mas largos son:
+T1-T2 ==> 943A5
+T1-T3 ==> CDEC
+T2-T3 ==> 571139
