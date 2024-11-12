@@ -6,6 +6,7 @@
 #include <fstream>
 #include <limits>
 #include <tuple>
+#include <set>
 
 using namespace std;
 
@@ -22,123 +23,151 @@ struct Conexion {
     }
 };
 
-vector<Colonia> colonias;
-vector<Conexion> conexiones, conexionesNuevoCableado;
-vector<pair<string, pair<int, int>>> nuevasColonias;
-
-int calcularDistancia(int x1, int y1, int x2, int y2) {
-    return round(sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)));
-}
-
 // Implementación Union-Find
 class UnionFind {
+private:
+    vector<int> parent, rank;
 public:
     UnionFind(int n) : parent(n), rank(n, 0) {
         for (int i = 0; i < n; i++) parent[i] = i;
     }
-    int find(int u) {
-        return (u == parent[u]) ? u : (parent[u] = find(parent[u]));
+
+    int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
     }
-    void unite(int u, int v) {
-        int rootU = find(u);
-        int rootV = find(v);
-        if (rootU != rootV) {
-            if (rank[rootU] < rank[rootV]) swap(rootU, rootV);
-            parent[rootV] = rootU;
-            if (rank[rootU] == rank[rootV]) rank[rootU]++;
+
+    void unite(int x, int y) {
+        int px = find(x), py = find(y);
+        if (px == py) return;
+
+        if (rank[px] < rank[py]) {
+            parent[px] = py;
+        } else if (rank[px] > rank[py]) {
+            parent[py] = px;
+        } else {
+            parent[py] = px;
+            rank[px]++;
         }
     }
-private:
-    vector<int> parent, rank;
+
+    bool connected(int x, int y) {
+        return find(x) == find(y);
+    }
 };
 
-// Algoritmo de Kruskal
-int kruskalMST(vector<Conexion>& conexiones, vector<Conexion>& resultadoMST, int numColonias) {
+// Kruskal
+vector<Conexion> kruskalMST(vector<Conexion>& conexiones, int n, int& costoTotal) {
+    vector<Conexion> mst;
     sort(conexiones.begin(), conexiones.end());
-    UnionFind uf(numColonias);
-    int totalCosto = 0;
+    UnionFind uf(n);
+    costoTotal = 0;
 
-    for (const auto& conexion : conexiones) {
-        if (uf.find(conexion.origen) != uf.find(conexion.destino)) {
+    for (const Conexion& conexion : conexiones) {
+        if (!uf.connected(conexion.origen, conexion.destino)) {
             uf.unite(conexion.origen, conexion.destino);
-            resultadoMST.push_back(conexion);
-            totalCosto += conexion.costo;
+            mst.push_back(conexion);
+            costoTotal += conexion.costo;
+
+            // Verificar si ya tenemos un árbol de expansión
+            set<int> components;
+            for (int i = 0; i < n; i++) {
+                components.insert(uf.find(i));
+            }
+            if (components.size() == 1) break;
         }
     }
-    return totalCosto;
+    return mst;
 }
 
-// Algoritmo TSP básico
-int tsp(int pos, int visitados, vector<vector<int>>& memo, vector<vector<int>>& distancias, vector<vector<int>>& camino) {
-    if (visitados == (1 << distancias.size()) - 1) return distancias[pos][0];
-    if (memo[pos][visitados] != -1) return memo[pos][visitados];
+// TSP usando Branch and Bound
+int tspSolver(const vector<vector<int>>& dist, vector<int>& bestPath, int n) {
+    vector<int> vertices(n);
+    for (int i = 0; i < n; i++) vertices[i] = i;
 
-    int resultado = numeric_limits<int>::max();
-    for (int i = 0; i < distancias.size(); i++) {
-        if (!(visitados & (1 << i)) && distancias[pos][i] != numeric_limits<int>::max()) {
-            int nuevoCosto = distancias[pos][i] + tsp(i, visitados | (1 << i), memo, distancias, camino);
-            if (nuevoCosto < resultado) {
-                resultado = nuevoCosto;
-                camino[pos][visitados] = i;
+    int bestCost = numeric_limits<int>::max();
+    vector<int> currentPath;
+
+    do {
+        if (vertices[0] != 0) continue; // Siempre empezar desde el primer vértice
+
+        int currentCost = 0;
+        bool validPath = true;
+
+        for (int i = 0; i < n - 1; i++) {
+            if (dist[vertices[i]][vertices[i + 1]] == numeric_limits<int>::max()) {
+                validPath = false;
+                break;
+            }
+            currentCost += dist[vertices[i]][vertices[i + 1]];
+        }
+
+        if (validPath && dist[vertices[n-1]][vertices[0]] != numeric_limits<int>::max()) {
+            currentCost += dist[vertices[n-1]][vertices[0]];
+
+            if (currentCost < bestCost) {
+                bestCost = currentCost;
+                bestPath = vertices;
+            }
+        }
+    } while (next_permutation(vertices.begin() + 1, vertices.end()));
+
+    return bestCost;
+}
+
+// Floyd-Warshall
+void floydWarshall(vector<vector<int>>& dist, vector<vector<int>>& next, int n) {
+    next.assign(n, vector<int>(n, -1));
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (dist[i][j] != numeric_limits<int>::max()) {
+                next[i][j] = j;
             }
         }
     }
-    return memo[pos][visitados] = resultado;
-}
 
-// Algoritmo de Floyd-Warshall para caminos mínimos
-void floydWarshall(vector<vector<int>>& distancias, int n) {
-    for (int k = 0; k < n; k++)
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                if (distancias[i][k] < numeric_limits<int>::max() && distancias[k][j] < numeric_limits<int>::max())
-                    distancias[i][j] = min(distancias[i][j], distancias[i][k] + distancias[k][j]);
-}
-
-// Conectar nuevas colonias
-void conectarNuevasColonias(ofstream& salida) {
-    salida << "-------------------\n";
-    salida << "4 – Conexión de nuevas colonias.\n";
-
-    for (const auto& nuevaColonia : nuevasColonias) {
-        int menorDistancia = numeric_limits<int>::max();
-        string coloniaCercana;
-        for (const auto& colonia : colonias) {
-            int distancia = calcularDistancia(nuevaColonia.second.first, nuevaColonia.second.second, colonia.x, colonia.y);
-            if (distancia < menorDistancia) {
-                menorDistancia = distancia;
-                coloniaCercana = colonia.nombre;
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dist[i][k] != numeric_limits<int>::max() && 
+                    dist[k][j] != numeric_limits<int>::max() && 
+                    dist[i][k] + dist[k][j] < dist[i][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                    next[i][j] = next[i][k];
+                }
             }
         }
-        salida << nuevaColonia.first << " debe conectarse con " << coloniaCercana << endl;
     }
-    salida << "-------------------\n";
 }
 
-// Imprimir la ruta TSP
-void imprimirRutaTSP(int start, vector<vector<int>>& camino, int n, ofstream& salida) {
-    salida << colonias[start].nombre;
-    int estado = 1 << start;
-    int posicion = start;
-    while (camino[posicion][estado] != -1) {
-        int siguiente = camino[posicion][estado];
-        salida << " - " << colonias[siguiente].nombre;
-        estado |= 1 << siguiente;
-        posicion = siguiente;
+// Función para obtener el camino más corto
+vector<int> getPath(const vector<vector<int>>& next, int i, int j) {
+    if (next[i][j] == -1) return {};
+
+    vector<int> path;
+    path.push_back(i);
+
+    while (i != j) {
+        i = next[i][j];
+        path.push_back(i);
     }
-    salida << " - " << colonias[start].nombre << endl;
+
+    return path;
 }
 
 int main() {
     int n, m, k, q;
     cin >> n >> m >> k >> q;
 
-    colonias.resize(n);
+    vector<Colonia> colonias(n);
     for (int i = 0; i < n; i++) {
         cin >> colonias[i].nombre >> colonias[i].x >> colonias[i].y >> colonias[i].esCentral;
     }
 
-    conexiones.resize(m);
+    vector<Conexion> conexiones(m);
     for (int i = 0; i < m; i++) {
         string origen, destino;
         int costo;
@@ -152,10 +181,11 @@ int main() {
         conexiones[i] = {idxOrigen, idxDestino, costo};
     }
 
-    conexionesNuevoCableado.resize(k);
+    vector<Conexion> conexionesNuevoCableado(k);
     for (int i = 0; i < k; i++) {
         string origen, destino;
         cin >> origen >> destino;
+
         int idxOrigen = -1, idxDestino = -1;
         for (int j = 0; j < n; j++) {
             if (colonias[j].nombre == origen) idxOrigen = j;
@@ -164,52 +194,82 @@ int main() {
         conexionesNuevoCableado[i] = {idxOrigen, idxDestino, 0};
     }
 
-    nuevasColonias.resize(q);
-    for (int i = 0; i < q; i++) {
-        cin >> nuevasColonias[i].first >> nuevasColonias[i].second.first >> nuevasColonias[i].second.second;
-    }
-
-    vector<Conexion> resultadoMST;
-    int costoMST = kruskalMST(conexiones, resultadoMST, n);
-
     ofstream salida("checking2.txt");
+
+    // 1. Cableado óptimo
+    int costoMST;
+    vector<Conexion> mst = kruskalMST(conexiones, n, costoMST);
+
     salida << "-------------------\n";
-    salida << "1 – Cableado óptimo de nueva conexión.\n";
-    for (const auto& conexion : resultadoMST) {
-        salida << colonias[conexion.origen].nombre << " - " << colonias[conexion.destino].nombre << " " << conexion.costo << endl;
+    salida << "1 - Cableado óptimo de nueva conexión.\n\n";
+    for (const auto& conexion : mst) {
+        salida << colonias[conexion.origen].nombre << " - " 
+               << colonias[conexion.destino].nombre << " " 
+               << conexion.costo << "\n";
     }
-    salida << "Costo Total: " << costoMST << endl;
+    salida << "\n" << "Costo Total: " << costoMST << "\n\n";
     salida << "-------------------\n";
 
-    vector<vector<int>> distancias(n, vector<int>(n, numeric_limits<int>::max()));
+    // 2. Ruta óptima
+    vector<vector<int>> dist(n, vector<int>(n, numeric_limits<int>::max()));
     for (const auto& conexion : conexiones) {
-        distancias[conexion.origen][conexion.destino] = conexion.costo;
-        distancias[conexion.destino][conexion.origen] = conexion.costo;
+        dist[conexion.origen][conexion.destino] = conexion.costo;
+        dist[conexion.destino][conexion.origen] = conexion.costo;
     }
 
-    vector<vector<int>> memo(n, vector<int>((1 << n), -1));
-    vector<vector<int>> camino(n, vector<int>((1 << n), -1));
-    int costoTSP = tsp(0, 1, memo, distancias, camino);
+    vector<int> bestPath;
+    int costoTSP = tspSolver(dist, bestPath, n);
 
-    salida << "2 – La ruta óptima.\n";
-    imprimirRutaTSP(0, camino, n, salida);
-    salida << "La Ruta Óptima tiene un costo total de: " << costoTSP << endl;
-
-    floydWarshall(distancias, n);
+    salida << "2 - La ruta óptima.\n\n";
+    for (size_t i = 0; i < bestPath.size(); i++) {
+        salida << colonias[bestPath[i]].nombre;
+        if (i < bestPath.size() - 1) salida << " - ";
+    }
+    salida << " - " << colonias[bestPath[0]].nombre << "\n\n";
+    salida << "La Ruta Óptima tiene un costo total de: " << costoTSP << "\n\n";
     salida << "-------------------\n";
-    salida << "3 – Caminos más cortos entre centrales.\n";
 
+    // 3. Caminos más cortos entre centrales
+    vector<vector<int>> next;
+    floydWarshall(dist, next, n);
+
+    salida << "3 - Caminos más cortos entre centrales.\n\n";
     for (int i = 0; i < n; i++) {
         if (!colonias[i].esCentral) continue;
         for (int j = i + 1; j < n; j++) {
-            if (colonias[j].esCentral && distancias[i][j] < numeric_limits<int>::max()) {
-                salida << colonias[i].nombre << " - " << colonias[j].nombre << " (" << distancias[i][j] << ")" << endl;
+            if (!colonias[j].esCentral) continue;
+            if (dist[i][j] != numeric_limits<int>::max()) {
+                vector<int> path = getPath(next, i, j);
+                for (size_t k = 0; k < path.size(); k++) {
+                    salida << colonias[path[k]].nombre;
+                    if (k < path.size() - 1) salida << " - ";
+                }
+                salida << " (" << dist[i][j] << ")\n";
             }
         }
     }
+    salida << "\n" << "-------------------\n";
 
-    conectarNuevasColonias(salida);
+    // 4. Conexión de nuevas colonias
+    salida << "4 - Conexión de nuevas colonias.\n\n";
+    for (int i = 0; i < q; i++) {
+        string nombreNueva;
+        int x, y;
+        cin >> nombreNueva >> x >> y;
+
+        int menorDistancia = numeric_limits<int>::max();
+        string coloniaCercana;
+        for (const auto& colonia : colonias) {
+            int distancia = round(sqrt(pow(x - colonia.x, 2) + pow(y - colonia.y, 2)));
+            if (distancia < menorDistancia) {
+                menorDistancia = distancia;
+                coloniaCercana = colonia.nombre;
+            }
+        }
+        salida << nombreNueva << " debe conectarse con " << coloniaCercana << "\n";
+    }
+    salida << "\n-------------------\n";
+
     salida.close();
-
     return 0;
 }
