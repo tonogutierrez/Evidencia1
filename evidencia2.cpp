@@ -7,6 +7,8 @@
 #include <limits>
 #include <tuple>
 #include <set>
+#include <sstream>
+
 
 using namespace std;
 
@@ -23,7 +25,6 @@ struct Conexion {
     }
 };
 
-// Implementación Union-Find
 class UnionFind {
 private:
     vector<int> parent, rank;
@@ -58,58 +59,98 @@ public:
     }
 };
 
-// Kruskal
-vector<Conexion> kruskalMST(vector<Conexion>& conexiones, int n, int& costoTotal) {
+vector<Conexion> kruskalMST(vector<Conexion>& conexiones, const vector<Conexion>& nuevoCableado, int n, int& costoTotal) {
     vector<Conexion> mst;
-    sort(conexiones.begin(), conexiones.end());
     UnionFind uf(n);
     costoTotal = 0;
 
-    for (const Conexion& conexion : conexiones) {
+    // Creamos un mapa para llevar la cuenta de las conexiones por colonia
+    vector<vector<bool>> tieneNuevoCable(n, vector<bool>(n, false));
+    for (const auto& conexion : nuevoCableado) {
+        tieneNuevoCable[conexion.origen][conexion.destino] = true;
+        tieneNuevoCable[conexion.destino][conexion.origen] = true;
+        // Add the connection but don't include in cost
+        uf.unite(conexion.origen, conexion.destino);
+    }
+
+    // Ordenamos las conexiones por costo
+    sort(conexiones.begin(), conexiones.end());
+
+    // Añadimos las conexiones al MST
+    for (const auto& conexion : conexiones) {
+        // Si ya tienen conexión con la nueva colonia, no la añadimos
+        if (tieneNuevoCable[conexion.origen][conexion.destino]) continue;
+
         if (!uf.connected(conexion.origen, conexion.destino)) {
             uf.unite(conexion.origen, conexion.destino);
             mst.push_back(conexion);
             costoTotal += conexion.costo;
-
-            // Verificar si ya tenemos un árbol de expansión
-            set<int> components;
-            for (int i = 0; i < n; i++) {
-                components.insert(uf.find(i));
-            }
-            if (components.size() == 1) break;
         }
     }
+
+    // Solo retornamos las conexiones que no están en el nuevo cableado
     return mst;
 }
 
-// TSP usando Branch and Bound
-int tspSolver(const vector<vector<int>>& dist, vector<int>& bestPath, int n) {
+// Función para encontrar el camino completo entre colonias
+vector<int> getCompletePath(const vector<vector<int>>& next, int start, int end) {
+    vector<int> path;
+    path.push_back(start);
+
+    int current = start;
+    while (current != end) {
+        current = next[current][end];
+        path.push_back(current);
+    }
+
+    return path;
+}
+
+// TSP
+int tspSolver(const vector<vector<int>>& dist, vector<int>& bestPath, const vector<Colonia>& colonias, const vector<vector<int>>& next) {
+    vector<int> nonCentralCities;
+    for (int i = 0; i < colonias.size(); i++) {
+        if (!colonias[i].esCentral) {
+            nonCentralCities.push_back(i);
+        }
+    }
+
+    int n = nonCentralCities.size();
+    if (n == 0) return 0;
+
     vector<int> vertices(n);
-    for (int i = 0; i < n; i++) vertices[i] = i;
+    for (int i = 0; i < n; i++) vertices[i] = nonCentralCities[i];
 
     int bestCost = numeric_limits<int>::max();
-    vector<int> currentPath;
-
+    vector<int> currentFullPath;
     do {
-        if (vertices[0] != 0) continue; // Siempre empezar desde el primer vértice
+        if (vertices[0] != nonCentralCities[0]) continue;
 
         int currentCost = 0;
         bool validPath = true;
+        vector<int> fullPath;
 
+        // Checamos cada segmento del camino
         for (int i = 0; i < n - 1; i++) {
             if (dist[vertices[i]][vertices[i + 1]] == numeric_limits<int>::max()) {
                 validPath = false;
                 break;
             }
+            // Añadimos el camino completo entre las colonias no centrales
+            vector<int> segmentPath = getCompletePath(next, vertices[i], vertices[i + 1]);
+            fullPath.insert(fullPath.end(), segmentPath.begin(), segmentPath.size() > 1 ? segmentPath.end() - 1 : segmentPath.end());
             currentCost += dist[vertices[i]][vertices[i + 1]];
         }
 
         if (validPath && dist[vertices[n-1]][vertices[0]] != numeric_limits<int>::max()) {
+            // Añadimos el ultimo segmento del camino
+            vector<int> lastSegment = getCompletePath(next, vertices[n-1], vertices[0]);
+            fullPath.insert(fullPath.end(), lastSegment.begin(), lastSegment.end());
             currentCost += dist[vertices[n-1]][vertices[0]];
 
             if (currentCost < bestCost) {
                 bestCost = currentCost;
-                bestPath = vertices;
+                bestPath = fullPath;  // Guardamos el camino completo incluyendo las colonias intermediarias
             }
         }
     } while (next_permutation(vertices.begin() + 1, vertices.end()));
@@ -196,9 +237,9 @@ int main() {
 
     ofstream salida("checking2.txt");
 
-    // 1. Cableado óptimo
+    // 1. Optimal cabling considering new cabling connections
     int costoMST;
-    vector<Conexion> mst = kruskalMST(conexiones, n, costoMST);
+    vector<Conexion> mst = kruskalMST(conexiones, conexionesNuevoCableado, n, costoMST);
 
     salida << "-------------------\n";
     salida << "1 - Cableado óptimo de nueva conexión.\n\n";
@@ -210,29 +251,29 @@ int main() {
     salida << "\n" << "Costo Total: " << costoMST << "\n\n";
     salida << "-------------------\n";
 
-    // 2. Ruta óptima
+    // 2. Optimal route for non-central cities
     vector<vector<int>> dist(n, vector<int>(n, numeric_limits<int>::max()));
     for (const auto& conexion : conexiones) {
         dist[conexion.origen][conexion.destino] = conexion.costo;
         dist[conexion.destino][conexion.origen] = conexion.costo;
     }
 
+    vector<vector<int>> next;
+    floydWarshall(dist, next, n);
+
     vector<int> bestPath;
-    int costoTSP = tspSolver(dist, bestPath, n);
+    int costoTSP = tspSolver(dist, bestPath, colonias, next);
 
     salida << "2 - La ruta óptima.\n\n";
     for (size_t i = 0; i < bestPath.size(); i++) {
         salida << colonias[bestPath[i]].nombre;
         if (i < bestPath.size() - 1) salida << " - ";
     }
-    salida << " - " << colonias[bestPath[0]].nombre << "\n\n";
+    salida << "\n\n";
     salida << "La Ruta Óptima tiene un costo total de: " << costoTSP << "\n\n";
     salida << "-------------------\n";
 
-    // 3. Caminos más cortos entre centrales
-    vector<vector<int>> next;
-    floydWarshall(dist, next, n);
-
+    // 3. Shortest paths between central cities
     salida << "3 - Caminos más cortos entre centrales.\n\n";
     for (int i = 0; i < n; i++) {
         if (!colonias[i].esCentral) continue;
@@ -248,9 +289,9 @@ int main() {
             }
         }
     }
-    salida << "\n" << "-------------------\n";
+    salida << "\n-------------------\n";
 
-    // 4. Conexión de nuevas colonias
+    // 4. Connect new colonies
     salida << "4 - Conexión de nuevas colonias.\n\n";
     for (int i = 0; i < q; i++) {
         string nombreNueva;
@@ -273,3 +314,4 @@ int main() {
     salida.close();
     return 0;
 }
+
