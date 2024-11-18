@@ -69,7 +69,6 @@ vector<Conexion> kruskalMST(vector<Conexion>& conexiones, const vector<Conexion>
     for (const auto& conexion : nuevoCableado) {
         tieneNuevoCable[conexion.origen][conexion.destino] = true;
         tieneNuevoCable[conexion.destino][conexion.origen] = true;
-        // Add the connection but don't include in cost
         uf.unite(conexion.origen, conexion.destino);
     }
 
@@ -251,7 +250,7 @@ int main() {
     salida << "\n" << "Costo Total: " << costoMST << "\n\n";
     salida << "-------------------\n";
 
-    // 2. Optimal route for non-central cities
+    // 2. Optimal route for non-central colonies
     vector<vector<int>> dist(n, vector<int>(n, numeric_limits<int>::max()));
     for (const auto& conexion : conexiones) {
         dist[conexion.origen][conexion.destino] = conexion.costo;
@@ -273,7 +272,7 @@ int main() {
     salida << "La Ruta Óptima tiene un costo total de: " << costoTSP << "\n\n";
     salida << "-------------------\n";
 
-    // 3. Shortest paths between central cities
+    // 3. Shortest paths between central colonies
     salida << "3 - Caminos más cortos entre centrales.\n\n";
     for (int i = 0; i < n; i++) {
         if (!colonias[i].esCentral) continue;
