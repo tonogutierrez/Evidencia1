@@ -1,3 +1,7 @@
+/*
+    Antonio Gutiérrez Mireles A01198527
+    Alejandro Hernandez A01571408
+*/
 #include <iostream>
 #include <vector>
 #include <string>
@@ -59,6 +63,7 @@ public:
     }
 };
 
+//O(E log E)
 vector<Conexion> kruskalMST(vector<Conexion>& conexiones, const vector<Conexion>& nuevoCableado, int n, int& costoTotal) {
     vector<Conexion> mst;
     UnionFind uf(n);
@@ -106,6 +111,7 @@ vector<int> getCompletePath(const vector<vector<int>>& next, int start, int end)
 }
 
 // TSP
+// O(n!)
 int tspSolver(const vector<vector<int>>& dist, vector<int>& bestPath, const vector<Colonia>& colonias, const vector<vector<int>>& next) {
     vector<int> nonCentralCities;
     for (int i = 0; i < colonias.size(); i++) {
@@ -158,6 +164,7 @@ int tspSolver(const vector<vector<int>>& dist, vector<int>& bestPath, const vect
 }
 
 // Floyd-Warshall
+// O(V^3)
 void floydWarshall(vector<vector<int>>& dist, vector<vector<int>>& next, int n) {
     next.assign(n, vector<int>(n, -1));
 
